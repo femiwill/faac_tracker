@@ -304,8 +304,9 @@ LGAS_DATA = {
 
 # ---------------------------------------------------------------------------
 # 3. FAAC MONTHLY NET ALLOCATION BASELINES (in Naira)
-#    These are approximate mid-range net allocations per month.
-#    Oct/Nov/Dec 2024 will vary +/- around these values.
+#    These are approximate mid-range net allocations per month (2024 baseline).
+#    2025 figures apply a ~12-18% growth factor (increased oil revenue, improved
+#    VAT collection, naira devaluation effects on nominal allocations).
 # ---------------------------------------------------------------------------
 
 # Multiplier: 1 billion = 1_000_000_000
@@ -395,6 +396,50 @@ IGR_ANNUAL_2023 = {
     "Yobe":          5.0 * B,
 }
 
+# ---------------------------------------------------------------------------
+# 5. IGR 2024 ANNUAL DATA (in Naira) — ~15-25% growth over 2023
+# ---------------------------------------------------------------------------
+
+IGR_ANNUAL_2024 = {
+    "Lagos":       780.0 * B,
+    "Rivers":      140.0 * B,
+    "FCT":         112.0 * B,
+    "Ogun":         78.0 * B,
+    "Delta":        60.0 * B,
+    "Kaduna":       48.0 * B,
+    "Kano":         46.0 * B,
+    "Oyo":          42.0 * B,
+    "Edo":          38.0 * B,
+    "Ondo":         34.0 * B,
+    "Enugu":        30.0 * B,
+    "Akwa Ibom":    28.0 * B,
+    "Cross River":  24.0 * B,
+    "Anambra":      23.0 * B,
+    "Abia":         22.0 * B,
+    "Kwara":        20.0 * B,
+    "Bauchi":       19.0 * B,
+    "Osun":         18.0 * B,
+    "Plateau":      17.0 * B,
+    "Ekiti":        16.0 * B,
+    "Imo":          15.0 * B,
+    "Benue":        14.0 * B,
+    "Niger":        13.0 * B,
+    "Kogi":         13.0 * B,
+    "Nasarawa":     12.0 * B,
+    "Adamawa":      12.0 * B,
+    "Borno":        12.0 * B,
+    "Ebonyi":       11.0 * B,
+    "Katsina":      11.0 * B,
+    "Sokoto":       10.0 * B,
+    "Bayelsa":      10.0 * B,
+    "Gombe":        10.0 * B,
+    "Taraba":        9.0 * B,
+    "Jigawa":        9.0 * B,
+    "Zamfara":       7.0 * B,
+    "Kebbi":         7.0 * B,
+    "Yobe":          6.0 * B,
+}
+
 # Capital / main LGAs that get a slightly larger share of LGA allocations
 CAPITAL_LGAS = {
     "Abia": "Umuahia North",
@@ -453,6 +498,10 @@ def generate_faac_for_state(state_name, month, year):
     deductions, net_allocation.
     """
     net_base = FAAC_NET_BASELINES.get(state_name, 5.0 * B)
+
+    # Apply year-over-year growth for 2025 (~12-18% increase)
+    if year >= 2025:
+        net_base *= random.uniform(1.12, 1.18)
 
     # Vary net by +/- 5% across months
     net_allocation = vary(net_base, 0.06)
@@ -573,10 +622,11 @@ def seed(fresh=False):
     print(f"  -> {total_lga_count} LGAs created.")
 
     # ------------------------------------------------------------------
-    # Step 3: FAAC Allocations (Oct, Nov, Dec 2024) - State level + LGA level
+    # Step 3: FAAC Allocations (Oct-Dec 2024 + Jan-Dec 2025)
     # ------------------------------------------------------------------
-    print("Seeding FAAC allocations (Oct-Dec 2024)...")
+    print("Seeding FAAC allocations (Oct 2024 - Dec 2025)...")
     months = [(10, 2024), (11, 2024), (12, 2024)]
+    months += [(m, 2025) for m in range(1, 13)]
     alloc_count = 0
 
     for month, year in months:
@@ -622,9 +672,9 @@ def seed(fresh=False):
     print(f"  -> {alloc_count} FAAC allocation records created.")
 
     # ------------------------------------------------------------------
-    # Step 4: IGR 2023 Data (4 quarters)
+    # Step 4: IGR Data (2023 + 2024, 4 quarters each)
     # ------------------------------------------------------------------
-    print("Seeding IGR 2023 data...")
+    print("Seeding IGR 2023 & 2024 data...")
     igr_count = 0
 
     # Quarterly distribution factors (slight seasonal variation)
@@ -635,20 +685,26 @@ def seed(fresh=False):
         4: 0.28,  # Q4 typically higher (year-end push)
     }
 
-    for state_name, state_obj in state_objects.items():
-        annual = IGR_ANNUAL_2023.get(state_name, 10.0 * B)
-        for quarter in range(1, 5):
-            base_quarterly = annual * q_factors[quarter]
-            # Add small random variation (+/- 5%)
-            amount = vary(base_quarterly, 0.05)
-            igr = IGR(
-                state_id=state_obj.id,
-                year=2023,
-                quarter=quarter,
-                amount=round(amount, 2),
-            )
-            db.session.add(igr)
-            igr_count += 1
+    igr_datasets = [
+        (2023, IGR_ANNUAL_2023),
+        (2024, IGR_ANNUAL_2024),
+    ]
+
+    for igr_year, igr_annual_data in igr_datasets:
+        for state_name, state_obj in state_objects.items():
+            annual = igr_annual_data.get(state_name, 10.0 * B)
+            for quarter in range(1, 5):
+                base_quarterly = annual * q_factors[quarter]
+                # Add small random variation (+/- 5%)
+                amount = vary(base_quarterly, 0.05)
+                igr = IGR(
+                    state_id=state_obj.id,
+                    year=igr_year,
+                    quarter=quarter,
+                    amount=round(amount, 2),
+                )
+                db.session.add(igr)
+                igr_count += 1
 
     print(f"  -> {igr_count} IGR records created.")
 
