@@ -30,10 +30,10 @@
         [data-bs-theme="dark"] {
             --bs-body-bg: #0a0f0d;
             --bs-body-color: #e0e8e4;
-            --glass-bg: rgba(20, 30, 25, 0.65);
-            --glass-border: rgba(40, 167, 69, 0.15);
-            --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-            --card-hover-shadow: 0 12px 40px rgba(40, 167, 69, 0.15);
+            --glass-bg: rgba(16, 24, 20, 0.92);
+            --glass-border: rgba(40, 167, 69, 0.18);
+            --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --card-hover-shadow: 0 12px 40px rgba(40, 167, 69, 0.18);
         }
 
         /* ===== SCROLLBAR ===== */
@@ -464,6 +464,54 @@
         [data-bs-theme="dark"] .table-bordered { border-color: rgba(40,167,69,0.15); }
         [data-bs-theme="dark"] .table-bordered th,
         [data-bs-theme="dark"] .table-bordered td { border-color: rgba(40,167,69,0.1); }
+
+        /* Dark mode: table headers */
+        [data-bs-theme="dark"] .table-alloc th { color: #8a9a90; }
+
+        /* Dark mode: table-success rows */
+        [data-bs-theme="dark"] .table-success {
+            --bs-table-bg: rgba(40, 167, 69, 0.1);
+            --bs-table-color: #e0e8e4;
+            --bs-table-border-color: rgba(40, 167, 69, 0.15);
+        }
+
+        /* Dark mode: alert-success */
+        [data-bs-theme="dark"] .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: rgba(40, 167, 69, 0.2);
+            color: #b0d8bc;
+        }
+
+        /* Dark mode: text-danger brighter */
+        [data-bs-theme="dark"] .text-danger { color: #ef6b6b !important; }
+
+        /* Dark mode: links */
+        [data-bs-theme="dark"] a:not(.btn):not(.nav-link):not(.navbar-brand):not(.search-results a) {
+            color: #6bc88a;
+        }
+        [data-bs-theme="dark"] a:not(.btn):not(.nav-link):not(.navbar-brand):hover {
+            color: #8fd8a5;
+        }
+
+        /* Dark mode: zone region boxes on terms page */
+        [data-bs-theme="dark"] .rounded[style*="background: #e3f2fd"] { background: rgba(21, 101, 192, 0.12) !important; }
+        [data-bs-theme="dark"] .rounded[style*="background: #fff3e0"] { background: rgba(230, 81, 0, 0.12) !important; }
+        [data-bs-theme="dark"] .rounded[style*="background: #f3e5f5"] { background: rgba(123, 31, 162, 0.12) !important; }
+        [data-bs-theme="dark"] .rounded[style*="background: #e8f5e9"] { background: rgba(46, 125, 50, 0.12) !important; }
+        [data-bs-theme="dark"] .rounded[style*="background: #fce4ec"] { background: rgba(198, 40, 40, 0.12) !important; }
+        [data-bs-theme="dark"] .rounded[style*="background: #fff8e1"] { background: rgba(245, 127, 23, 0.12) !important; }
+
+        /* Dark mode: table hover */
+        [data-bs-theme="dark"] .table-hover > tbody > tr:hover > * {
+            --bs-table-hover-bg: rgba(40, 167, 69, 0.06);
+            --bs-table-hover-color: #e0e8e4;
+        }
+
+        /* Dark mode: card body text */
+        [data-bs-theme="dark"] .card-body { color: #d0ddd6; }
+
+        /* Dark mode: list items */
+        [data-bs-theme="dark"] .list-unstyled strong { color: #8a9a90; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
