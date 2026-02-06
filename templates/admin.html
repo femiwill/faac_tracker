@@ -95,5 +95,93 @@
             </div>
         </div>
     </div>
+
+    <!-- Automated Scraper Section -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-cloud-download"></i> FAAC Data Scraper</h5>
+                        {% if next_run_time %}
+                        <span class="badge bg-info">
+                            <i class="bi bi-clock"></i> Next run: {{ next_run_time.strftime('%d %b %Y, %H:%M UTC') }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Automatically scrapes FAAC disbursement data from NBS (National Bureau of Statistics) on the 15th of each month.
+                        You can also trigger a manual scrape below.
+                    </p>
+
+                    <!-- Manual Trigger -->
+                    <form method="post" action="{{ url_for('admin_run_scraper') }}" class="mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-auto">
+                                <label class="form-label fw-semibold small">Target Month</label>
+                                <select name="target_month" class="form-select form-select-sm">
+                                    {% for m, name in MONTH_NAMES.items() %}
+                                    <option value="{{ m }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label fw-semibold small">Target Year</label>
+                                <input type="number" name="target_year" class="form-control form-control-sm" value="2026" min="2020" max="2030">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-play-circle"></i> Run Scraper Now
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Scrape History -->
+                    <h6 class="fw-bold mb-2"><i class="bi bi-journal-text"></i> Scrape History</h6>
+                    {% if scrape_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Run Date</th>
+                                    <th>Target Period</th>
+                                    <th>Status</th>
+                                    <th>Source</th>
+                                    <th>States</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in scrape_logs %}
+                                <tr>
+                                    <td class="small">{{ log.run_date.strftime('%d %b %Y %H:%M') }}</td>
+                                    <td>{{ MONTH_NAMES[log.target_month] }} {{ log.target_year }}</td>
+                                    <td>
+                                        {% if log.status == 'success' %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% elif log.status == 'failed' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">No Data</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small">{{ log.source or '-' }}</td>
+                                    <td>{{ log.states_added }}</td>
+                                    <td class="small text-muted" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ log.message }}">
+                                        {{ log.message or '-' }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No scrape history yet. Use the button above to run a manual scrape.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

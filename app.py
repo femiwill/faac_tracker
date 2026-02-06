@@ -1,7 +1,13 @@
 import os
+import logging
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
+import requests as http_requests
+from openpyxl import load_workbook
+from io import BytesIO
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'faac-tracker-dev-key-change-in-prod')
@@ -56,6 +62,18 @@ class IGR(db.Model):
     amount = db.Column(db.Float, default=0)
 
 
+class ScrapeLog(db.Model):
+    __tablename__ = 'scrape_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    run_date = db.Column(db.DateTime, nullable=False)
+    target_month = db.Column(db.Integer, nullable=False)
+    target_year = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), nullable=False)  # 'success', 'failed', 'no_data'
+    source = db.Column(db.String(100))  # 'nbs_excel', 'oagf', 'manual'
+    states_added = db.Column(db.Integer, default=0)
+    message = db.Column(db.Text)
+
+
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 MONTH_NAMES = {
@@ -93,6 +111,226 @@ def login_required(f):
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated
+
+
+# ── Scraper ─────────────────────────────────────────────────────────────────
+
+logger = logging.getLogger(__name__)
+
+NBS_URL_PATTERNS = [
+    'https://nigerianstat.gov.ng/resource/Disbursement%20{month},%20{year}.xlsx',
+    'https://nigerianstat.gov.ng/resource/FAAC%20Disbursement%20{month}%20{year}.xlsx',
+    'https://nigerianstat.gov.ng/resource/{month}%20{year}%20Disbursement.xlsx',
+]
+
+
+def _build_state_lookup():
+    """Build a lookup dict mapping lowercase state name variants to State objects."""
+    states = State.query.all()
+    lookup = {}
+    for s in states:
+        lookup[s.name.lower()] = s
+        lookup[s.name.lower().replace(' ', '')] = s
+        # Handle FCT variations
+        if s.name == 'FCT':
+            lookup['fct abuja'] = s
+            lookup['fct, abuja'] = s
+            lookup['federal capital territory'] = s
+    return lookup
+
+
+def _try_download_nbs_excel(month_name, year):
+    """Try each NBS URL pattern; return workbook or None."""
+    for pattern in NBS_URL_PATTERNS:
+        url = pattern.format(month=month_name, year=year)
+        try:
+            resp = http_requests.get(url, timeout=30)
+            if resp.status_code == 200 and len(resp.content) > 1000:
+                wb = load_workbook(BytesIO(resp.content), read_only=True, data_only=True)
+                return wb, url
+        except Exception:
+            continue
+    return None, None
+
+
+def _parse_excel_data(wb, state_lookup):
+    """Parse FAAC allocation data from an NBS Excel workbook.
+
+    Returns list of dicts with keys: state_id, statutory, vat, deductions, net.
+    """
+    records = []
+    ws = wb.active
+
+    # Find the header row and column indices
+    header_row = None
+    col_map = {}
+    for row in ws.iter_rows(min_row=1, max_row=20, values_only=False):
+        for cell in row:
+            val = str(cell.value or '').strip().lower()
+            if 'state' in val or 's/n' in val:
+                header_row = cell.row
+                break
+        if header_row:
+            # Map column headers
+            for cell in row:
+                val = str(cell.value or '').strip().lower()
+                if 'statutory' in val:
+                    col_map['statutory'] = cell.column - 1
+                elif 'vat' in val:
+                    col_map['vat'] = cell.column - 1
+                elif 'deduction' in val:
+                    col_map['deductions'] = cell.column - 1
+                elif 'net' in val:
+                    col_map['net'] = cell.column - 1
+            break
+
+    if not header_row:
+        return records
+
+    # Parse data rows
+    for row in ws.iter_rows(min_row=header_row + 1, values_only=True):
+        if not row or not row[0]:
+            continue
+
+        cell_val = str(row[0]).strip().lower()
+        # Skip summary/total rows
+        if any(kw in cell_val for kw in ['total', 'grand', 'sum', 'note']):
+            continue
+
+        state = state_lookup.get(cell_val)
+        if not state:
+            # Try removing numbers/punctuation (e.g. "1. Abia" → "abia")
+            cleaned = ''.join(c for c in cell_val if c.isalpha() or c == ' ').strip()
+            state = state_lookup.get(cleaned)
+
+        if not state:
+            continue
+
+        def safe_float(val):
+            if val is None:
+                return 0.0
+            try:
+                return float(val)
+            except (ValueError, TypeError):
+                return 0.0
+
+        statutory = safe_float(row[col_map.get('statutory', 1)])
+        vat = safe_float(row[col_map.get('vat', 2)])
+        deductions = safe_float(row[col_map.get('deductions', 3)])
+        net = safe_float(row[col_map.get('net', 4)])
+
+        if net <= 0 and statutory <= 0:
+            continue
+
+        records.append({
+            'state_id': state.id,
+            'statutory': statutory,
+            'vat': vat,
+            'deductions': deductions,
+            'net': net,
+        })
+
+    return records
+
+
+def scrape_faac_data(target_month=None, target_year=None):
+    """Scrape the latest FAAC allocation data from NBS.
+
+    If target_month/year not specified, uses the previous month.
+    """
+    with app.app_context():
+        now = datetime.utcnow()
+        if target_month is None or target_year is None:
+            # Target the previous month (data is released with a lag)
+            if now.month == 1:
+                target_month = 12
+                target_year = now.year - 1
+            else:
+                target_month = now.month - 1
+                target_year = now.year
+
+        month_name = MONTH_NAMES[target_month]
+
+        # Check if data already exists for this month
+        existing = FAACAllocation.query.filter_by(
+            month=target_month, year=target_year, lga_id=None
+        ).first()
+        if existing:
+            log = ScrapeLog(
+                run_date=now, target_month=target_month, target_year=target_year,
+                status='no_data', source=None, states_added=0,
+                message=f'Data for {month_name} {target_year} already exists in database.'
+            )
+            db.session.add(log)
+            db.session.commit()
+            logger.info(f'Scrape skipped: data for {month_name} {target_year} already exists.')
+            return
+
+        # Try NBS Excel download
+        state_lookup = _build_state_lookup()
+        wb, source_url = _try_download_nbs_excel(month_name, target_year)
+
+        if wb:
+            try:
+                records = _parse_excel_data(wb, state_lookup)
+                wb.close()
+
+                if len(records) < 10:
+                    log = ScrapeLog(
+                        run_date=now, target_month=target_month, target_year=target_year,
+                        status='failed', source='nbs_excel', states_added=0,
+                        message=f'Excel found at {source_url} but only {len(records)} states parsed (expected 37). Data not inserted.'
+                    )
+                    db.session.add(log)
+                    db.session.commit()
+                    logger.warning(f'Scrape failed: only {len(records)} states parsed.')
+                    return
+
+                # Insert records
+                for rec in records:
+                    gross = rec['statutory'] + rec['vat']
+                    alloc = FAACAllocation(
+                        state_id=rec['state_id'], lga_id=None,
+                        month=target_month, year=target_year,
+                        statutory_allocation=rec['statutory'],
+                        vat_allocation=rec['vat'],
+                        total_gross=gross,
+                        deductions=rec['deductions'],
+                        net_allocation=rec['net'],
+                    )
+                    db.session.add(alloc)
+
+                log = ScrapeLog(
+                    run_date=now, target_month=target_month, target_year=target_year,
+                    status='success', source='nbs_excel', states_added=len(records),
+                    message=f'Successfully scraped {len(records)} state records from {source_url}.'
+                )
+                db.session.add(log)
+                db.session.commit()
+                logger.info(f'Scrape success: {len(records)} states for {month_name} {target_year}.')
+                return
+
+            except Exception as e:
+                db.session.rollback()
+                log = ScrapeLog(
+                    run_date=now, target_month=target_month, target_year=target_year,
+                    status='failed', source='nbs_excel', states_added=0,
+                    message=f'Error parsing Excel from {source_url}: {str(e)}'
+                )
+                db.session.add(log)
+                db.session.commit()
+                logger.error(f'Scrape error: {e}')
+                return
+
+        # NBS not available
+        log = ScrapeLog(
+            run_date=now, target_month=target_month, target_year=target_year,
+            status='no_data', source=None, states_added=0,
+            message=f'No Excel file found for {month_name} {target_year} at NBS. Tried {len(NBS_URL_PATTERNS)} URL patterns.'
+        )
+        db.session.add(log)
+        db.session.commit()
+        logger.info(f'Scrape no_data: no file found for {month_name} {target_year}.')
 
 
 # ── Routes ──────────────────────────────────────────────────────────────────
@@ -280,7 +518,11 @@ def admin_logout():
 @login_required
 def admin_dashboard():
     states = State.query.order_by(State.name).all()
-    return render_template('admin.html', states=states)
+    scrape_logs = ScrapeLog.query.order_by(ScrapeLog.run_date.desc()).limit(20).all()
+    next_run = scheduler.get_job('faac_monthly_scrape')
+    next_run_time = next_run.next_run_time if next_run else None
+    return render_template('admin.html', states=states, scrape_logs=scrape_logs,
+                           next_run_time=next_run_time)
 
 
 @app.route('/admin/add_allocation', methods=['POST'])
@@ -325,6 +567,16 @@ def api_lgas(state_id):
     return jsonify([{'id': lg.id, 'name': lg.name} for lg in lgas])
 
 
+@app.route('/admin/run_scraper', methods=['POST'])
+@login_required
+def admin_run_scraper():
+    target_month = request.form.get('target_month', type=int)
+    target_year = request.form.get('target_year', type=int)
+    scrape_faac_data(target_month=target_month, target_year=target_year)
+    flash('Scraper run completed. Check the scrape history below for results.', 'info')
+    return redirect(url_for('admin_dashboard'))
+
+
 # ── Init ────────────────────────────────────────────────────────────────────
 
 with app.app_context():
@@ -333,6 +585,21 @@ with app.app_context():
     if State.query.count() == 0:
         from seed_data import seed
         seed()
+
+# ── Scheduler ───────────────────────────────────────────────────────────────
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=scrape_faac_data,
+    trigger='cron',
+    day=15,
+    hour=9,  # 9 AM UTC
+    id='faac_monthly_scrape',
+    misfire_grace_time=86400,  # allow 24h grace if missed
+    replace_existing=True,
+)
+scheduler.start()
+logger.info('APScheduler started. FAAC scraper scheduled for the 15th of each month at 9 AM UTC.')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
