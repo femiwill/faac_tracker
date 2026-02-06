@@ -412,9 +412,24 @@
         @media (max-width: 768px) {
             .hero-section h1 { font-size: 1.7rem; }
             .hero-section { padding: 2.5rem 0; }
-            .stat-card .stat-value { font-size: 1.2rem; }
+            .stat-card .stat-value { font-size: 1.1rem; }
+            .stat-card .stat-label { font-size: 0.7rem; }
+            .stat-card .card-body { padding: 1rem; }
             .chart-container { height: 250px; }
             h1 { font-size: 2rem; }
+            /* Stack icon + label vertically on small stat cards */
+            .stat-icon { width: 36px; height: 36px; font-size: 1rem; border-radius: 10px; }
+            .d-flex.gap-3 { gap: 0.5rem !important; }
+            /* Filter form wraps */
+            form.d-flex.gap-2 { flex-wrap: wrap; }
+            form.d-flex.gap-2 .form-select { width: 100% !important; }
+            form.d-flex.gap-2 .btn { width: 100%; }
+        }
+        @media (max-width: 576px) {
+            .hero-section h1 { font-size: 1.4rem; }
+            .stat-card .stat-value { font-size: 1rem; }
+            .hero-section .lead { font-size: 0.9rem; }
+            .container { padding-left: 16px; padding-right: 16px; }
         }
 
         /* ===== DARK MODE ENHANCEMENTS ===== */
