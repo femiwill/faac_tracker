@@ -2,7 +2,7 @@
 """
 seed_data.py - Populate the FAAC Tracker database with comprehensive Nigerian
 fiscal data including all 36 states + FCT, 774 LGAs, FAAC allocations for
-Oct-Dec 2024, and 2023 IGR data.
+Oct 2024 - Jan 2026, and 2023-2025 IGR data.
 
 Usage:
     python seed_data.py
@@ -440,6 +440,50 @@ IGR_ANNUAL_2024 = {
     "Yobe":          6.0 * B,
 }
 
+# ---------------------------------------------------------------------------
+# 6. IGR 2025 ANNUAL DATA (in Naira) — ~18-25% growth over 2024
+# ---------------------------------------------------------------------------
+
+IGR_ANNUAL_2025 = {
+    "Lagos":       950.0 * B,
+    "Rivers":      170.0 * B,
+    "FCT":         138.0 * B,
+    "Ogun":         95.0 * B,
+    "Delta":        73.0 * B,
+    "Kaduna":       58.0 * B,
+    "Kano":         56.0 * B,
+    "Oyo":          51.0 * B,
+    "Edo":          46.0 * B,
+    "Ondo":         41.0 * B,
+    "Enugu":        37.0 * B,
+    "Akwa Ibom":    34.0 * B,
+    "Cross River":  29.0 * B,
+    "Anambra":      28.0 * B,
+    "Abia":         27.0 * B,
+    "Kwara":        24.0 * B,
+    "Bauchi":       23.0 * B,
+    "Osun":         22.0 * B,
+    "Plateau":      21.0 * B,
+    "Ekiti":        19.0 * B,
+    "Imo":          18.0 * B,
+    "Benue":        17.0 * B,
+    "Niger":        16.0 * B,
+    "Kogi":         16.0 * B,
+    "Nasarawa":     15.0 * B,
+    "Adamawa":      15.0 * B,
+    "Borno":        15.0 * B,
+    "Ebonyi":       13.0 * B,
+    "Katsina":      13.0 * B,
+    "Sokoto":       12.0 * B,
+    "Bayelsa":      12.0 * B,
+    "Gombe":        12.0 * B,
+    "Taraba":       11.0 * B,
+    "Jigawa":       11.0 * B,
+    "Zamfara":       9.0 * B,
+    "Kebbi":         9.0 * B,
+    "Yobe":          7.0 * B,
+}
+
 # Capital / main LGAs that get a slightly larger share of LGA allocations
 CAPITAL_LGAS = {
     "Abia": "Umuahia North",
@@ -499,9 +543,11 @@ def generate_faac_for_state(state_name, month, year):
     """
     net_base = FAAC_NET_BASELINES.get(state_name, 5.0 * B)
 
-    # Apply year-over-year growth for 2025 (~12-18% increase)
-    if year >= 2025:
-        net_base *= random.uniform(1.12, 1.18)
+    # Apply year-over-year growth
+    if year == 2025:
+        net_base *= random.uniform(1.12, 1.18)  # ~12-18% over 2024
+    elif year >= 2026:
+        net_base *= random.uniform(1.25, 1.35)  # ~25-35% over 2024 (compounded growth)
 
     # Vary net by +/- 5% across months
     net_allocation = vary(net_base, 0.06)
@@ -624,9 +670,10 @@ def seed(fresh=False):
     # ------------------------------------------------------------------
     # Step 3: FAAC Allocations (Oct-Dec 2024 + Jan-Dec 2025)
     # ------------------------------------------------------------------
-    print("Seeding FAAC allocations (Oct 2024 - Dec 2025)...")
+    print("Seeding FAAC allocations (Oct 2024 - Jan 2026)...")
     months = [(10, 2024), (11, 2024), (12, 2024)]
     months += [(m, 2025) for m in range(1, 13)]
+    months += [(1, 2026)]
     alloc_count = 0
 
     for month, year in months:
@@ -688,6 +735,7 @@ def seed(fresh=False):
     igr_datasets = [
         (2023, IGR_ANNUAL_2023),
         (2024, IGR_ANNUAL_2024),
+        (2025, IGR_ANNUAL_2025),
     ]
 
     for igr_year, igr_annual_data in igr_datasets:
