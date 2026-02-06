@@ -97,6 +97,11 @@ def login_required(f):
 
 # ── Routes ──────────────────────────────────────────────────────────────────
 
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+
 @app.route('/')
 def index():
     states = State.query.order_by(State.name).all()

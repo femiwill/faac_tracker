@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Terms Explanation{% endblock %}
+
+{% block content %}
+<section class="hero-section py-4">
+    <div class="container">
+        <h1 class="mb-1"><i class="bi bi-book"></i> Terms Explanation</h1>
+        <p class="opacity-75 mb-0">Understanding the key financial terms used in Nigeria's revenue allocation system</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            <!-- FAAC -->
+            <div class="card stat-card mb-4" id="faac">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-bank"></i> FAAC — Federal Account Allocation Committee
+                    </h4>
+                    <p>
+                        FAAC is the body responsible for distributing revenue from the <strong>Federation Account</strong> among the three tiers of government in Nigeria — Federal, State, and Local Governments.
+                    </p>
+                    <p>
+                        The Federation Account receives income from oil and gas revenue, company income tax, customs and excise duties, and other federally-collected revenues. Every month, FAAC meets to decide how much each tier of government receives based on a constitutionally defined formula.
+                    </p>
+                    <div class="alert alert-light border">
+                        <strong>Current sharing formula:</strong><br>
+                        Federal Government — 52.68%<br>
+                        State Governments — 26.72%<br>
+                        Local Governments — 20.60%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statutory Allocation -->
+            <div class="card stat-card mb-4" id="statutory">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-cash-coin"></i> Statutory Allocation
+                    </h4>
+                    <p>
+                        This is each state or LGA's share of the <strong>Federation Account</strong>, funded primarily by <strong>oil revenue</strong>, mining, company income tax, customs duties, and other federal income. It is the larger component of each state's monthly FAAC disbursement, typically making up about <strong>60% of the gross allocation</strong>.
+                    </p>
+                    <p>The statutory allocation to each state is calculated using a formula based on:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr><th>Factor</th><th>Weight</th><th>Explanation</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Equality</td><td><strong>40%</strong></td><td>Equal share to all 36 states + FCT</td></tr>
+                                <tr><td>Population</td><td><strong>30%</strong></td><td>States with larger populations receive more</td></tr>
+                                <tr><td>Land mass &amp; terrain</td><td><strong>10%</strong></td><td>Accounts for geographical size and difficulty of terrain</td></tr>
+                                <tr><td>Internal revenue effort</td><td><strong>10%</strong></td><td>Rewards states that generate more of their own revenue (IGR)</td></tr>
+                                <tr><td>Social development</td><td><strong>10%</strong></td><td>Factors like school enrolment, hospital beds, water supply</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Additionally, oil-producing states receive a special <strong>13% derivation</strong> from natural resources produced in their territory, which is why states like Rivers, Delta, Akwa Ibom, and Bayelsa typically receive much higher allocations.
+                    </p>
+                </div>
+            </div>
+
+            <!-- VAT Allocation -->
+            <div class="card stat-card mb-4" id="vat">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-receipt"></i> VAT Allocation
+                    </h4>
+                    <p>
+                        This is each state or LGA's share of the <strong>Value Added Tax (VAT)</strong> pool. VAT is a consumption tax (currently 7.5%) collected by the <strong>Federal Inland Revenue Service (FIRS)</strong> on goods and services across Nigeria.
+                    </p>
+                    <p>The VAT pool is first split among the three tiers of government:</p>
+                    <div class="alert alert-light border">
+                        Federal Government — 15%<br>
+                        State Governments — 50%<br>
+                        Local Governments — 35%
+                    </div>
+                    <p>Among states, the state share of the VAT pool is then distributed using:</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr><th>Factor</th><th>Weight</th><th>Explanation</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Equality</td><td><strong>50%</strong></td><td>Equal share to all states</td></tr>
+                                <tr><td>Population</td><td><strong>30%</strong></td><td>Based on population size</td></tr>
+                                <tr><td>Derivation</td><td><strong>20%</strong></td><td>Based on where the VAT was actually generated</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        The 20% derivation factor is why <strong>Lagos</strong> receives significantly more VAT allocation than other states — the bulk of Nigeria's commercial activity and VAT collection happens there. This has been a subject of ongoing debate, with some states advocating for a higher derivation component.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Gross Allocation -->
+            <div class="card stat-card mb-4" id="gross">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-plus-circle"></i> Total Gross Allocation
+                    </h4>
+                    <p>
+                        This is the sum of a state's <strong>Statutory Allocation</strong> and <strong>VAT Allocation</strong> before any deductions are applied.
+                    </p>
+                    <div class="alert alert-success border-0">
+                        <strong>Gross Allocation = Statutory Allocation + VAT Allocation</strong>
+                    </div>
+                    <p class="mb-0">
+                        The gross figure represents the total amount a state is entitled to receive from the Federation Account in a given month, before obligations like loan repayments are subtracted.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Deductions -->
+            <div class="card stat-card mb-4" id="deductions">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-dash-circle"></i> Deductions
+                    </h4>
+                    <p>
+                        Deductions are amounts subtracted from the gross allocation <strong>at source</strong> before the money reaches the state. These typically include:
+                    </p>
+                    <ul>
+                        <li><strong>External debt service</strong> — repayments on foreign loans taken by the state</li>
+                        <li><strong>Domestic debt service</strong> — repayments on bonds, treasury bills, and local loans</li>
+                        <li><strong>Contractual obligations</strong> — payments for federally-guaranteed contracts</li>
+                        <li><strong>Pension contributions</strong> — contributions to pension schemes</li>
+                        <li><strong>National water/power obligations</strong> — dues owed to federal utilities</li>
+                    </ul>
+                    <p class="text-muted small mb-0">
+                        Deductions typically range from <strong>8% to 15%</strong> of the gross allocation, but can be higher for states with significant debt obligations. This is often a point of concern, as some states lose a large portion of their allocation to debt servicing.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Net Allocation -->
+            <div class="card stat-card mb-4" id="net">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-wallet2"></i> Net Allocation
+                    </h4>
+                    <p>
+                        The net allocation is the <strong>actual amount</strong> a state receives after all deductions have been made. This is the money that hits the state's account and is available for spending on governance, infrastructure, salaries, and public services.
+                    </p>
+                    <div class="alert alert-success border-0">
+                        <strong>Net Allocation = Gross Allocation - Deductions</strong>
+                    </div>
+                    <p class="mb-0">
+                        This is the most important figure for understanding what a state actually has to work with each month.
+                    </p>
+                </div>
+            </div>
+
+            <!-- IGR -->
+            <div class="card stat-card mb-4" id="igr">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-graph-up-arrow"></i> IGR — Internally Generated Revenue
+                    </h4>
+                    <p>
+                        IGR refers to revenue that a <strong>state generates on its own</strong>, independent of federal allocations. It is a measure of a state's fiscal self-sufficiency and economic activity.
+                    </p>
+                    <p>Common sources of IGR include:</p>
+                    <ul>
+                        <li><strong>Personal income tax (PAYE)</strong> — the largest source for most states</li>
+                        <li><strong>Land use charges &amp; property taxes</strong></li>
+                        <li><strong>Business premises registration</strong></li>
+                        <li><strong>Road taxes &amp; vehicle licensing</strong></li>
+                        <li><strong>Market levies &amp; fees</strong></li>
+                        <li><strong>Fines, licenses, and permits</strong></li>
+                        <li><strong>Investment income</strong></li>
+                    </ul>
+                    <p>
+                        Lagos State leads dramatically in IGR (over ₦780B in 2024), generating more internally than it receives from FAAC. Most other states are heavily dependent on federal allocations, with IGR making up a small fraction of their total revenue.
+                    </p>
+                    <p class="text-muted small mb-0">
+                        Improving IGR is considered critical for Nigeria's fiscal federalism — the more states can fund themselves, the less dependent they are on oil revenue and federal transfers.
+                    </p>
+                </div>
+            </div>
+
+            <!-- LGA -->
+            <div class="card stat-card mb-4" id="lga">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-geo-alt"></i> LGA — Local Government Area
+                    </h4>
+                    <p>
+                        LGAs are the third tier of government in Nigeria, below the federal and state levels. Nigeria has <strong>774 LGAs</strong> across its 36 states and FCT.
+                    </p>
+                    <p>
+                        Each LGA receives its own FAAC allocation directly from the Federation Account (not through the state government). However, in practice, many state governments control or influence how LGA funds are spent through <strong>State-Local Government Joint Account Allocation Committees (JACs)</strong>.
+                    </p>
+                    <p class="mb-0 text-muted small">
+                        LGA allocations are distributed using a similar formula to states (equality, population, land mass, etc.), but at smaller amounts. The capital city LGA of each state typically receives a slightly larger share due to higher population density and administrative responsibilities.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Geo Zones -->
+            <div class="card stat-card mb-4" id="geozones">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-map"></i> Geo-Political Zones
+                    </h4>
+                    <p>
+                        Nigeria's 36 states and FCT are grouped into <strong>six geo-political zones</strong> for administrative and political purposes:
+                    </p>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #e3f2fd;">
+                                <strong style="color: #1565c0;">North Central</strong>
+                                <div class="small mt-1">Benue, FCT, Kogi, Kwara, Nasarawa, Niger, Plateau</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #fff3e0;">
+                                <strong style="color: #e65100;">North East</strong>
+                                <div class="small mt-1">Adamawa, Bauchi, Borno, Gombe, Taraba, Yobe</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #f3e5f5;">
+                                <strong style="color: #7b1fa2;">North West</strong>
+                                <div class="small mt-1">Jigawa, Kaduna, Kano, Katsina, Kebbi, Sokoto, Zamfara</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #e8f5e9;">
+                                <strong style="color: #2e7d32;">South East</strong>
+                                <div class="small mt-1">Abia, Anambra, Ebonyi, Enugu, Imo</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #fce4ec;">
+                                <strong style="color: #c62828;">South South</strong>
+                                <div class="small mt-1">Akwa Ibom, Bayelsa, Cross River, Delta, Edo, Rivers</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background: #fff8e1;">
+                                <strong style="color: #f57f17;">South West</strong>
+                                <div class="small mt-1">Ekiti, Lagos, Ogun, Ondo, Osun, Oyo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Derivation -->
+            <div class="card stat-card" id="derivation">
+                <div class="card-body">
+                    <h4 class="fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-droplet"></i> 13% Derivation Principle
+                    </h4>
+                    <p>
+                        The Nigerian Constitution mandates that <strong>13% of revenue derived from natural resources</strong> (primarily crude oil and gas) must be returned to the states where those resources are produced. This is known as the derivation principle.
+                    </p>
+                    <p>
+                        This primarily benefits the oil-producing states in the <strong>South South</strong> zone — Rivers, Delta, Akwa Ibom, Bayelsa, Edo, and Cross River — as well as Ondo and Imo states which also produce oil.
+                    </p>
+                    <p class="mb-0 text-muted small">
+                        The 13% derivation is a major reason why oil-producing states receive significantly higher FAAC allocations than non-oil-producing states. There have been ongoing debates about increasing this percentage, with some advocates pushing for up to 50% derivation.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-4">
+            <div class="card stat-card position-sticky" style="top: 80px;">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-list-nested"></i> Quick Navigation</h5>
+                    <nav class="nav flex-column">
+                        <a class="nav-link px-0 py-2 border-bottom" href="#faac">FAAC</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#statutory">Statutory Allocation</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#vat">VAT Allocation</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#gross">Total Gross Allocation</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#deductions">Deductions</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#net">Net Allocation</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#igr">IGR</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#lga">LGA</a>
+                        <a class="nav-link px-0 py-2 border-bottom" href="#geozones">Geo-Political Zones</a>
+                        <a class="nav-link px-0 py-2" href="#derivation">13% Derivation</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
