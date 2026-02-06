@@ -17,7 +17,7 @@
                 <span class="badge bg-light text-dark">{{ state.geo_zone }}</span>
                 <span class="badge bg-light text-dark">{{ state.lgas|length }} LGAs</span>
             </div>
-            <a href="{{ url_for('compare') }}?states={{ state.name }}" class="btn btn-outline-light btn-sm mt-2 mt-md-0">
+            <a href="{{ url_for('compare') }}?states={{ state.name }}" class="btn btn-outline-light btn-sm mt-2 mt-md-0 btn-cta-pulse">
                 <i class="bi bi-bar-chart-line"></i> Compare with others
             </a>
         </div>
@@ -25,40 +25,52 @@
 </section>
 
 <div class="container py-4">
-    <!-- Summary Cards -->
+    <!-- Summary Cards with Icons -->
     {% if allocations %}
     {% set latest = allocations[0] %}
     <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Net Allocation (Latest)</div>
-                    <div class="stat-value">{{ latest.net_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-green"><i class="bi bi-wallet2"></i></span>
+                        <div class="stat-label">Net Allocation (Latest)</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.net_allocation|naira }}</div>
                     <small class="text-muted">{{ MONTH_NAMES[latest.month] }} {{ latest.year }}</small>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.1s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Statutory Allocation</div>
-                    <div class="stat-value">{{ latest.statutory_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-blue"><i class="bi bi-cash-coin"></i></span>
+                        <div class="stat-label">Statutory Allocation</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.statutory_allocation|naira }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.2s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">VAT Allocation</div>
-                    <div class="stat-value">{{ latest.vat_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-gold"><i class="bi bi-receipt"></i></span>
+                        <div class="stat-label">VAT Allocation</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.vat_allocation|naira }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.3s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Deductions</div>
-                    <div class="stat-value text-danger">{{ latest.deductions|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-red"><i class="bi bi-dash-circle"></i></span>
+                        <div class="stat-label">Deductions</div>
+                    </div>
+                    <div class="stat-value text-danger counter-animate">{{ latest.deductions|naira }}</div>
                 </div>
             </div>
         </div>
@@ -68,7 +80,7 @@
     <div class="row g-4">
         <!-- Charts -->
         <div class="col-lg-8">
-            <div class="card stat-card mb-4">
+            <div class="card stat-card mb-4 reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> FAAC Allocation Trend</h5>
                     <div class="chart-container">
@@ -77,7 +89,7 @@
                 </div>
             </div>
 
-            <div class="card stat-card mb-4">
+            <div class="card stat-card mb-4 reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Latest Allocation Breakdown</h5>
                     <div class="chart-container" style="height: 280px;">
@@ -90,9 +102,11 @@
         <!-- IGR Sidebar -->
         <div class="col-lg-4">
             {% if igr_data %}
-            <div class="card stat-card mb-4">
+            <div class="card stat-card mb-4 reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-cash-stack"></i> Internally Generated Revenue</h5>
+                    {% set igr_total = igr_data|map(attribute='amount')|sum %}
+                    {% set max_igr = igr_data|map(attribute='amount')|max %}
                     <table class="table table-sm table-alloc">
                         <thead>
                             <tr><th>Period</th><th class="text-end">Amount</th></tr>
@@ -101,13 +115,18 @@
                             {% for igr in igr_data %}
                             <tr>
                                 <td>Q{{ igr.quarter }} {{ igr.year }}</td>
-                                <td class="text-end fw-semibold">{{ igr.amount|naira }}</td>
+                                <td class="text-end fw-semibold">
+                                    <span class="counter-animate">{{ igr.amount|naira }}</span>
+                                    <div class="alloc-progress mt-1">
+                                        <div class="alloc-progress-bar" data-width="{{ (igr.amount / max_igr * 100)|round(1) if max_igr else 0 }}"></div>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                             <tr class="table-success">
                                 <td class="fw-bold">Total</td>
                                 <td class="text-end fw-bold">
-                                    {{ igr_data|map(attribute='amount')|sum|naira }}
+                                    <span class="counter-animate">{{ igr_total|naira }}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -116,7 +135,7 @@
             </div>
             {% endif %}
 
-            <div class="card stat-card">
+            <div class="card stat-card reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-info-circle"></i> State Info</h5>
                     <ul class="list-unstyled mb-0">
@@ -130,7 +149,7 @@
     </div>
 
     <!-- Allocation Table -->
-    <div class="card stat-card mt-4 mb-4">
+    <div class="card stat-card mt-4 mb-4 reveal">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
                 <h5 class="fw-bold mb-0"><i class="bi bi-table"></i> Monthly FAAC Allocations</h5>
@@ -181,12 +200,13 @@
 
     <!-- LGA Allocations -->
     {% if lga_allocations %}
-    <div class="card stat-card mb-4">
+    <div class="card stat-card mb-4 reveal">
         <div class="card-body">
             <h5 class="fw-bold mb-3">
                 <i class="bi bi-geo"></i> LGA Allocations
                 <small class="text-muted fw-normal">({{ MONTH_NAMES[latest_lga.month] }} {{ latest_lga.year }})</small>
             </h5>
+            {% set max_lga_alloc = lga_allocations|map(attribute='net_allocation')|max %}
             <div class="table-responsive">
                 <table class="table table-hover table-alloc">
                     <thead>
@@ -194,6 +214,7 @@
                             <th class="ps-3">#</th>
                             <th>LGA</th>
                             <th class="text-end">Net Allocation</th>
+                            <th style="width: 120px;"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -207,6 +228,11 @@
                                 </a>
                             </td>
                             <td class="text-end">{{ la.net_allocation|naira }}</td>
+                            <td>
+                                <div class="alloc-progress">
+                                    <div class="alloc-progress-bar" data-width="{{ (la.net_allocation / max_lga_alloc * 100)|round(1) if max_lga_alloc else 0 }}"></div>
+                                </div>
+                            </td>
                             <td>
                                 <a href="{{ url_for('lga_detail', state_name=state.name, lga_name=la.lga.name) }}" class="btn btn-sm btn-outline-success">
                                     <i class="bi bi-arrow-right"></i>
@@ -230,8 +256,16 @@
     const chartVat = {{ chart_vat|tojson }};
     const chartNet = {{ chart_net|tojson }};
 
-    // Trend Chart
-    new Chart(document.getElementById('trendChart'), {
+    // Trend Chart with gradient fills
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const gradGreen = trendCtx.createLinearGradient(0, 0, 0, 350);
+    gradGreen.addColorStop(0, 'rgba(26, 86, 50, 0.9)');
+    gradGreen.addColorStop(1, 'rgba(26, 86, 50, 0.4)');
+    const gradGold = trendCtx.createLinearGradient(0, 0, 0, 350);
+    gradGold.addColorStop(0, 'rgba(240, 192, 64, 0.9)');
+    gradGold.addColorStop(1, 'rgba(240, 192, 64, 0.4)');
+
+    new Chart(trendCtx, {
         type: 'bar',
         data: {
             labels: chartLabels,
@@ -239,40 +273,58 @@
                 {
                     label: 'Statutory',
                     data: chartStatutory,
-                    backgroundColor: 'rgba(26, 86, 50, 0.8)',
-                    borderRadius: 4,
+                    backgroundColor: gradGreen,
+                    borderRadius: 6,
+                    borderSkipped: false,
                 },
                 {
                     label: 'VAT',
                     data: chartVat,
-                    backgroundColor: 'rgba(240, 192, 64, 0.8)',
-                    borderRadius: 4,
+                    backgroundColor: gradGold,
+                    borderRadius: 6,
+                    borderSkipped: false,
                 },
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeOutQuart' },
             plugins: {
                 tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter' },
+                    padding: 12,
+                    cornerRadius: 10,
                     callbacks: {
                         label: ctx => ctx.dataset.label + ': ₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
                     }
+                },
+                legend: {
+                    labels: { font: { family: 'Inter', weight: '500' }, padding: 20, usePointStyle: true, pointStyle: 'rectRounded' }
                 }
             },
             scales: {
                 y: {
+                    grid: { color: 'rgba(0,0,0,0.04)' },
                     ticks: {
+                        font: { family: 'Inter', size: 11 },
                         callback: v => '₦' + (v / 1e9).toFixed(0) + 'B'
                     }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Inter', size: 11 } }
                 }
             }
         }
     });
 
-    // Breakdown Donut
+    // Breakdown Donut with enhanced styling
     {% if allocations %}
-    new Chart(document.getElementById('breakdownChart'), {
+    const doughnutCtx = document.getElementById('breakdownChart').getContext('2d');
+    new Chart(doughnutCtx, {
         type: 'doughnut',
         data: {
             labels: ['Statutory Allocation', 'VAT Allocation', 'Deductions'],
@@ -284,17 +336,27 @@
                 ],
                 backgroundColor: ['#1a5632', '#f0c040', '#dc3545'],
                 borderWidth: 0,
+                hoverOffset: 8,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '65%',
+            cutout: '68%',
+            animation: { animateRotate: true, duration: 1200, easing: 'easeOutQuart' },
             plugins: {
                 tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter' },
+                    padding: 12,
+                    cornerRadius: 10,
                     callbacks: {
                         label: ctx => ctx.label + ': ₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
                     }
+                },
+                legend: {
+                    labels: { font: { family: 'Inter', weight: '500' }, padding: 16, usePointStyle: true, pointStyle: 'circle' }
                 }
             }
         }

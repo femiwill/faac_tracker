@@ -1,11 +1,98 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Rotating text in hero */
+    .hero-rotating {
+        display: inline-block;
+        position: relative;
+        height: 1.5em;
+        overflow: hidden;
+        vertical-align: bottom;
+    }
+    .hero-rotating-inner {
+        display: flex;
+        flex-direction: column;
+        animation: rotateText 9s ease infinite;
+    }
+    .hero-rotating-inner span {
+        height: 1.5em;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    @keyframes rotateText {
+        0%, 28% { transform: translateY(0); }
+        33%, 61% { transform: translateY(-1.5em); }
+        66%, 94% { transform: translateY(-3em); }
+        100% { transform: translateY(0); }
+    }
+
+    /* Zone card hover flood */
+    .zone-card {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .zone-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 0;
+        transition: height 0.4s ease;
+        opacity: 0.06;
+        z-index: 0;
+    }
+    .zone-card:hover::after { height: 100%; }
+    .zone-card:hover { transform: translateY(-4px); }
+    .zone-card .card-body { position: relative; z-index: 1; }
+    .zone-card.zone-card-nc::after { background: #1565c0; }
+    .zone-card.zone-card-ne::after { background: #e65100; }
+    .zone-card.zone-card-nw::after { background: #7b1fa2; }
+    .zone-card.zone-card-se::after { background: #2e7d32; }
+    .zone-card.zone-card-ss::after { background: #c62828; }
+    .zone-card.zone-card-sw::after { background: #f57f17; }
+
+    /* Top 5 animated bar */
+    .top5-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.06);
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    .top5-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: var(--gradient-green);
+        transition: width 1.2s ease-out;
+    }
+    [data-bs-theme="dark"] .top5-bar { background: rgba(255,255,255,0.08); }
+
+    /* Table row hover glow */
+    .table-glow tbody tr:hover {
+        box-shadow: inset 4px 0 0 var(--primary-light);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="hero-section text-center">
     <div class="container">
         <h1 class="mb-2">Nigeria FAAC Allocation Tracker</h1>
-        <p class="lead mb-4 opacity-75">Search for any state or LGA to see federal allocations and revenue data</p>
+        <p class="lead mb-4 opacity-75" style="position: relative;">
+            <span class="hero-rotating">
+                <span class="hero-rotating-inner">
+                    <span>Search for any state or LGA...</span>
+                    <span>Track FAAC allocations monthly...</span>
+                    <span>Compare state revenues side by side...</span>
+                </span>
+            </span>
+        </p>
         <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
             <input type="text" id="searchInput" class="form-control form-control-lg"
@@ -17,7 +104,7 @@
 
 <div class="container py-5">
     <!-- Browse by Geo Zone -->
-    <h4 class="fw-bold mb-3"><i class="bi bi-geo-alt"></i> Browse by Geo-Political Zone</h4>
+    <h4 class="fw-bold mb-3 reveal"><i class="bi bi-geo-alt"></i> Browse by Geo-Political Zone</h4>
     <div class="row g-4 mb-5">
         {% set zone_classes = {
             'North Central': 'zone-nc',
@@ -27,9 +114,17 @@
             'South South': 'zone-ss',
             'South West': 'zone-sw'
         } %}
+        {% set zone_card_classes = {
+            'North Central': 'zone-card-nc',
+            'North East': 'zone-card-ne',
+            'North West': 'zone-card-nw',
+            'South East': 'zone-card-se',
+            'South South': 'zone-card-ss',
+            'South West': 'zone-card-sw'
+        } %}
         {% for zone in GEO_ZONES %}
-        <div class="col-md-4 col-lg-2">
-            <div class="card stat-card h-100">
+        <div class="col-md-4 col-lg-2 reveal" style="transition-delay: {{ loop.index0 * 0.08 }}s;">
+            <div class="card stat-card zone-card {{ zone_card_classes[zone] }} h-100">
                 <div class="card-body text-center">
                     <span class="zone-badge {{ zone_classes[zone] }} mb-2">{{ zone }}</span>
                     <div class="mt-2">
@@ -47,13 +142,14 @@
 
     <!-- Latest FAAC Summary -->
     {% if summary %}
-    <h4 class="fw-bold mb-3">
+    <h4 class="fw-bold mb-3 reveal">
         <i class="bi bi-trophy"></i>
         Top 5 States — {{ MONTH_NAMES[latest.month] }} {{ latest.year }}
     </h4>
     <div class="row g-3 mb-5">
+        {% set max_alloc = summary[0].net_allocation if summary else 1 %}
         {% for alloc in summary %}
-        <div class="col-md-6 col-lg">
+        <div class="col-md-6 col-lg reveal" style="transition-delay: {{ loop.index0 * 0.1 }}s;">
             <a href="{{ url_for('state_detail', name=alloc.state.name) }}" class="text-decoration-none">
                 <div class="card stat-card h-100">
                     <div class="card-body">
@@ -61,8 +157,11 @@
                             <span class="rank-badge rank-{{ loop.index }} me-2">{{ loop.index }}</span>
                             <h6 class="mb-0 fw-bold">{{ alloc.state.name }}</h6>
                         </div>
-                        <div class="stat-value">{{ alloc.net_allocation|naira }}</div>
+                        <div class="stat-value counter-animate">{{ alloc.net_allocation|naira }}</div>
                         <div class="stat-label">Net Allocation</div>
+                        <div class="top5-bar">
+                            <div class="top5-bar-fill alloc-progress-bar" data-width="{{ (alloc.net_allocation / max_alloc * 100)|round(1) }}"></div>
+                        </div>
                     </div>
                 </div>
             </a>
@@ -72,11 +171,11 @@
     {% endif %}
 
     <!-- All States Table -->
-    <h4 class="fw-bold mb-3"><i class="bi bi-list-ul"></i> All States</h4>
-    <div class="card stat-card">
+    <h4 class="fw-bold mb-3 reveal"><i class="bi bi-list-ul"></i> All States</h4>
+    <div class="card stat-card reveal">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-alloc mb-0">
+                <table class="table table-hover table-alloc table-glow mb-0">
                     <thead>
                         <tr>
                             <th class="ps-4">State</th>
@@ -151,6 +250,19 @@
         if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
             searchResults.style.display = 'none';
         }
+    });
+
+    // Animate Top 5 bars on load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.top5-bar-fill').forEach(function(bar) {
+            bar.style.width = '0%';
+        });
+        setTimeout(function() {
+            document.querySelectorAll('.top5-bar-fill').forEach(function(bar) {
+                const w = bar.getAttribute('data-width');
+                if (w) bar.style.width = w + '%';
+            });
+        }, 300);
     });
 </script>
 {% endblock %}

@@ -1,6 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Terms Explanation{% endblock %}
 
+{% block extra_css %}
+<style>
+    .term-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    .term-icon-green { background: rgba(26, 86, 50, 0.1); color: #1a5632; }
+    .term-icon-gold { background: rgba(240, 192, 64, 0.15); color: #c89b2a; }
+    .term-icon-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .term-icon-red { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+    .term-icon-purple { background: rgba(123, 31, 162, 0.1); color: #7b1fa2; }
+    .term-icon-teal { background: rgba(0, 150, 136, 0.1); color: #009688; }
+    .term-icon-orange { background: rgba(230, 81, 0, 0.1); color: #e65100; }
+    .term-icon-indigo { background: rgba(48, 63, 159, 0.1); color: #303f9f; }
+    .term-icon-cyan { background: rgba(0, 188, 212, 0.1); color: #00bcd4; }
+
+    [data-bs-theme="dark"] .term-icon-green { background: rgba(40, 167, 69, 0.15); color: #28a745; }
+    [data-bs-theme="dark"] .term-icon-gold { background: rgba(240, 192, 64, 0.12); color: #f0c040; }
+    [data-bs-theme="dark"] .term-icon-blue { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+    [data-bs-theme="dark"] .term-icon-red { background: rgba(220, 53, 69, 0.12); color: #ef5350; }
+    [data-bs-theme="dark"] .term-icon-purple { background: rgba(123, 31, 162, 0.12); color: #ba68c8; }
+    [data-bs-theme="dark"] .term-icon-teal { background: rgba(0, 150, 136, 0.12); color: #4db6ac; }
+    [data-bs-theme="dark"] .term-icon-orange { background: rgba(230, 81, 0, 0.12); color: #ff8a65; }
+    [data-bs-theme="dark"] .term-icon-indigo { background: rgba(48, 63, 159, 0.12); color: #7986cb; }
+    [data-bs-theme="dark"] .term-icon-cyan { background: rgba(0, 188, 212, 0.12); color: #4dd0e1; }
+
+    .term-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .term-heading h4 { margin: 0; }
+
+    /* Sidebar active link */
+    .terms-nav .nav-link {
+        padding: 10px 16px;
+        border-radius: 10px;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        color: inherit;
+    }
+    .terms-nav .nav-link:hover {
+        background: rgba(26, 86, 50, 0.06);
+    }
+    .terms-nav .nav-link.active {
+        background: rgba(40, 167, 69, 0.08);
+        border-left-color: var(--primary-light);
+        font-weight: 600;
+        color: var(--primary);
+    }
+    [data-bs-theme="dark"] .terms-nav .nav-link.active {
+        background: rgba(40, 167, 69, 0.12);
+        color: var(--primary-light);
+    }
+
+    html { scroll-behavior: smooth; }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="hero-section py-4">
     <div class="container">
@@ -14,11 +80,12 @@
         <div class="col-lg-8">
 
             <!-- FAAC -->
-            <div class="card stat-card mb-4" id="faac">
+            <div class="card stat-card mb-4 reveal" id="faac">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-bank"></i> FAAC — Federal Account Allocation Committee
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-green"><i class="bi bi-bank"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">FAAC — Federal Account Allocation Committee</h4>
+                    </div>
                     <p>
                         FAAC is the body responsible for distributing revenue from the <strong>Federation Account</strong> among the three tiers of government in Nigeria — Federal, State, and Local Governments.
                     </p>
@@ -35,11 +102,12 @@
             </div>
 
             <!-- Statutory Allocation -->
-            <div class="card stat-card mb-4" id="statutory">
+            <div class="card stat-card mb-4 reveal" id="statutory">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-cash-coin"></i> Statutory Allocation
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-gold"><i class="bi bi-cash-coin"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">Statutory Allocation</h4>
+                    </div>
                     <p>
                         This is each state or LGA's share of the <strong>Federation Account</strong>, funded primarily by <strong>oil revenue</strong>, mining, company income tax, customs duties, and other federal income. It is the larger component of each state's monthly FAAC disbursement, typically making up about <strong>60% of the gross allocation</strong>.
                     </p>
@@ -65,11 +133,12 @@
             </div>
 
             <!-- VAT Allocation -->
-            <div class="card stat-card mb-4" id="vat">
+            <div class="card stat-card mb-4 reveal" id="vat">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-receipt"></i> VAT Allocation
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-blue"><i class="bi bi-receipt"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">VAT Allocation</h4>
+                    </div>
                     <p>
                         This is each state or LGA's share of the <strong>Value Added Tax (VAT)</strong> pool. VAT is a consumption tax (currently 7.5%) collected by the <strong>Federal Inland Revenue Service (FIRS)</strong> on goods and services across Nigeria.
                     </p>
@@ -99,11 +168,12 @@
             </div>
 
             <!-- Gross Allocation -->
-            <div class="card stat-card mb-4" id="gross">
+            <div class="card stat-card mb-4 reveal" id="gross">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-plus-circle"></i> Total Gross Allocation
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-teal"><i class="bi bi-plus-circle"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">Total Gross Allocation</h4>
+                    </div>
                     <p>
                         This is the sum of a state's <strong>Statutory Allocation</strong> and <strong>VAT Allocation</strong> before any deductions are applied.
                     </p>
@@ -117,11 +187,12 @@
             </div>
 
             <!-- Deductions -->
-            <div class="card stat-card mb-4" id="deductions">
+            <div class="card stat-card mb-4 reveal" id="deductions">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-dash-circle"></i> Deductions
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-red"><i class="bi bi-dash-circle"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">Deductions</h4>
+                    </div>
                     <p>
                         Deductions are amounts subtracted from the gross allocation <strong>at source</strong> before the money reaches the state. These typically include:
                     </p>
@@ -139,11 +210,12 @@
             </div>
 
             <!-- Net Allocation -->
-            <div class="card stat-card mb-4" id="net">
+            <div class="card stat-card mb-4 reveal" id="net">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-wallet2"></i> Net Allocation
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-purple"><i class="bi bi-wallet2"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">Net Allocation</h4>
+                    </div>
                     <p>
                         The net allocation is the <strong>actual amount</strong> a state receives after all deductions have been made. This is the money that hits the state's account and is available for spending on governance, infrastructure, salaries, and public services.
                     </p>
@@ -157,11 +229,12 @@
             </div>
 
             <!-- IGR -->
-            <div class="card stat-card mb-4" id="igr">
+            <div class="card stat-card mb-4 reveal" id="igr">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-graph-up-arrow"></i> IGR — Internally Generated Revenue
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-orange"><i class="bi bi-graph-up-arrow"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">IGR — Internally Generated Revenue</h4>
+                    </div>
                     <p>
                         IGR refers to revenue that a <strong>state generates on its own</strong>, independent of federal allocations. It is a measure of a state's fiscal self-sufficiency and economic activity.
                     </p>
@@ -185,11 +258,12 @@
             </div>
 
             <!-- LGA -->
-            <div class="card stat-card mb-4" id="lga">
+            <div class="card stat-card mb-4 reveal" id="lga">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-geo-alt"></i> LGA — Local Government Area
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-indigo"><i class="bi bi-geo-alt"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">LGA — Local Government Area</h4>
+                    </div>
                     <p>
                         LGAs are the third tier of government in Nigeria, below the federal and state levels. Nigeria has <strong>774 LGAs</strong> across its 36 states and FCT.
                     </p>
@@ -203,11 +277,12 @@
             </div>
 
             <!-- Geo Zones -->
-            <div class="card stat-card mb-4" id="geozones">
+            <div class="card stat-card mb-4 reveal" id="geozones">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-map"></i> Geo-Political Zones
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-cyan"><i class="bi bi-map"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">Geo-Political Zones</h4>
+                    </div>
                     <p>
                         Nigeria's 36 states and FCT are grouped into <strong>six geo-political zones</strong> for administrative and political purposes:
                     </p>
@@ -253,11 +328,12 @@
             </div>
 
             <!-- Derivation -->
-            <div class="card stat-card" id="derivation">
+            <div class="card stat-card reveal" id="derivation">
                 <div class="card-body">
-                    <h4 class="fw-bold" style="color: var(--primary);">
-                        <i class="bi bi-droplet"></i> 13% Derivation Principle
-                    </h4>
+                    <div class="term-heading mb-3">
+                        <span class="term-icon term-icon-gold"><i class="bi bi-droplet"></i></span>
+                        <h4 class="fw-bold" style="color: var(--primary);">13% Derivation Principle</h4>
+                    </div>
                     <p>
                         The Nigerian Constitution mandates that <strong>13% of revenue derived from natural resources</strong> (primarily crude oil and gas) must be returned to the states where those resources are produced. This is known as the derivation principle.
                     </p>
@@ -277,21 +353,63 @@
             <div class="card stat-card position-sticky" style="top: 80px;">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-list-nested"></i> Quick Navigation</h5>
-                    <nav class="nav flex-column">
-                        <a class="nav-link px-0 py-2 border-bottom" href="#faac">FAAC</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#statutory">Statutory Allocation</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#vat">VAT Allocation</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#gross">Total Gross Allocation</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#deductions">Deductions</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#net">Net Allocation</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#igr">IGR</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#lga">LGA</a>
-                        <a class="nav-link px-0 py-2 border-bottom" href="#geozones">Geo-Political Zones</a>
-                        <a class="nav-link px-0 py-2" href="#derivation">13% Derivation</a>
+                    <nav class="nav flex-column terms-nav" id="termsNav">
+                        <a class="nav-link" href="#faac" data-section="faac">FAAC</a>
+                        <a class="nav-link" href="#statutory" data-section="statutory">Statutory Allocation</a>
+                        <a class="nav-link" href="#vat" data-section="vat">VAT Allocation</a>
+                        <a class="nav-link" href="#gross" data-section="gross">Total Gross Allocation</a>
+                        <a class="nav-link" href="#deductions" data-section="deductions">Deductions</a>
+                        <a class="nav-link" href="#net" data-section="net">Net Allocation</a>
+                        <a class="nav-link" href="#igr" data-section="igr">IGR</a>
+                        <a class="nav-link" href="#lga" data-section="lga">LGA</a>
+                        <a class="nav-link" href="#geozones" data-section="geozones">Geo-Political Zones</a>
+                        <a class="nav-link" href="#derivation" data-section="derivation">13% Derivation</a>
                     </nav>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Active section tracking on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('.stat-card[id]');
+        const navLinks = document.querySelectorAll('#termsNav .nav-link');
+        if (sections.length === 0 || navLinks.length === 0) return;
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    navLinks.forEach(function(link) {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-section') === id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: 0
+        });
+
+        sections.forEach(function(section) { observer.observe(section); });
+
+        // Smooth scroll on click
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

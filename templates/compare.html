@@ -1,6 +1,51 @@
 {% extends "base.html" %}
 {% block title %}Compare States{% endblock %}
 
+{% block extra_css %}
+<style>
+    .compare-card {
+        position: relative;
+        overflow: hidden;
+    }
+    .compare-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 16px 16px 0 0;
+    }
+    .compare-card-0::after { background: linear-gradient(90deg, #1a5632, #28a745); }
+    .compare-card-1::after { background: linear-gradient(90deg, #f0c040, #f7d774); }
+    .compare-card-2::after { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .compare-select {
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 500;
+        border: 2px solid rgba(0,0,0,0.08);
+        transition: all 0.3s;
+    }
+    .compare-select:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px var(--glow-green);
+    }
+    [data-bs-theme="dark"] .compare-select {
+        background: #141e19;
+        border-color: rgba(40,167,69,0.2);
+        color: #e0e8e4;
+    }
+    .empty-state-icon {
+        font-size: 5rem;
+        background: var(--gradient-green);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="hero-section py-4">
     <div class="container">
@@ -11,12 +56,12 @@
 
 <div class="container py-4">
     <!-- State Selector -->
-    <div class="card stat-card mb-4">
+    <div class="card stat-card mb-4 reveal">
         <div class="card-body">
             <form method="get" class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">State 1</label>
-                    <select name="states" class="form-select">
+                    <select name="states" class="form-select compare-select">
                         <option value="">Select a state</option>
                         {% for s in states %}
                         <option value="{{ s.name }}" {% if s.name in selected_names %}selected{% endif %}>{{ s.name }}</option>
@@ -25,7 +70,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">State 2</label>
-                    <select name="states" class="form-select">
+                    <select name="states" class="form-select compare-select">
                         <option value="">Select a state</option>
                         {% for s in states %}
                         <option value="{{ s.name }}" {% if selected_names|length > 1 and s.name == selected_names[1] %}selected{% endif %}>{{ s.name }}</option>
@@ -34,7 +79,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">State 3 (optional)</label>
-                    <select name="states" class="form-select">
+                    <select name="states" class="form-select compare-select">
                         <option value="">Select a state</option>
                         {% for s in states %}
                         <option value="{{ s.name }}" {% if selected_names|length > 2 and s.name == selected_names[2] %}selected{% endif %}>{{ s.name }}</option>
@@ -42,7 +87,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-success w-100">
+                    <button type="submit" class="btn btn-success w-100 btn-cta-pulse" style="padding: 10px 16px; border-radius: 12px;">
                         <i class="bi bi-arrow-repeat"></i> Compare
                     </button>
                 </div>
@@ -55,8 +100,8 @@
     <div class="row g-3 mb-4">
         {% set colors = ['#1a5632', '#f0c040', '#3b82f6'] %}
         {% for c in compared %}
-        <div class="col-md-4">
-            <div class="card stat-card h-100" style="border-top: 4px solid {{ colors[loop.index0] }};">
+        <div class="col-md-4 reveal" style="transition-delay: {{ loop.index0 * 0.1 }}s;">
+            <div class="card stat-card compare-card compare-card-{{ loop.index0 }} h-100">
                 <div class="card-body">
                     <h5 class="fw-bold">{{ c.state.name }}</h5>
                     <span class="badge bg-secondary mb-2">{{ c.state.geo_zone }}</span>
@@ -64,13 +109,13 @@
                     {% set latest_alloc = c.allocations[-1] %}
                     <div class="mt-2">
                         <div class="stat-label">Latest Net Allocation</div>
-                        <div class="stat-value">{{ latest_alloc.net_allocation|naira }}</div>
+                        <div class="stat-value counter-animate">{{ latest_alloc.net_allocation|naira }}</div>
                         <small class="text-muted">{{ MONTH_NAMES[latest_alloc.month] }} {{ latest_alloc.year }}</small>
                     </div>
                     {% endif %}
                     <div class="mt-2">
                         <div class="stat-label">Total IGR (2023)</div>
-                        <div class="fw-bold" style="color: {{ colors[loop.index0] }};">{{ c.igr_total|naira }}</div>
+                        <div class="fw-bold counter-animate" style="color: {{ colors[loop.index0] }};">{{ c.igr_total|naira }}</div>
                     </div>
                     <div class="mt-2">
                         <div class="stat-label">LGAs</div>
@@ -83,7 +128,7 @@
     </div>
 
     <!-- Comparison Chart -->
-    <div class="card stat-card mb-4">
+    <div class="card stat-card mb-4 reveal">
         <div class="card-body">
             <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> Net Allocation Comparison</h5>
             <div class="chart-container">
@@ -93,7 +138,7 @@
     </div>
 
     <!-- Side-by-side Table -->
-    <div class="card stat-card">
+    <div class="card stat-card reveal">
         <div class="card-body">
             <h5 class="fw-bold mb-3"><i class="bi bi-table"></i> Detailed Comparison</h5>
             <div class="table-responsive">
@@ -139,13 +184,13 @@
         </div>
     </div>
     {% elif selected_names %}
-    <div class="text-center py-5">
+    <div class="text-center py-5 reveal">
         <i class="bi bi-exclamation-circle display-4 text-muted"></i>
         <p class="mt-3 text-muted">Please select at least one valid state to compare.</p>
     </div>
     {% else %}
-    <div class="text-center py-5">
-        <i class="bi bi-bar-chart-line display-1 text-muted opacity-25"></i>
+    <div class="text-center py-5 reveal">
+        <i class="bi bi-bar-chart-line empty-state-icon"></i>
         <h4 class="mt-3 text-muted">Select states above to begin comparison</h4>
         <p class="text-muted">Compare FAAC allocations, IGR, and more across Nigerian states</p>
     </div>
@@ -167,11 +212,11 @@
         backgroundColor: colors[{{ loop.index0 }}],
         borderColor: borderColors[{{ loop.index0 }}],
         borderWidth: 2,
-        borderRadius: 4,
+        borderRadius: 6,
+        borderSkipped: false,
     });
     {% endfor %}
 
-    // Use the longest label set
     let longestLabels = [];
     {% for c in compared %}
     if ({{ c.labels|tojson }}.length > longestLabels.length) {
@@ -185,18 +230,33 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeOutQuart' },
             plugins: {
                 tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter' },
+                    padding: 12,
+                    cornerRadius: 10,
                     callbacks: {
                         label: ctx => ctx.dataset.label + ': ₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
                     }
+                },
+                legend: {
+                    labels: { font: { family: 'Inter', weight: '500' }, padding: 20, usePointStyle: true, pointStyle: 'rectRounded' }
                 }
             },
             scales: {
                 y: {
+                    grid: { color: 'rgba(0,0,0,0.04)' },
                     ticks: {
+                        font: { family: 'Inter', size: 11 },
                         callback: v => '₦' + (v / 1e9).toFixed(0) + 'B'
                     }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Inter', size: 11 } }
                 }
             }
         }

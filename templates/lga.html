@@ -1,6 +1,29 @@
 {% extends "base.html" %}
 {% block title %}{{ lga.name }} - {{ state.name }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    .sibling-list a {
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .sibling-list a:hover {
+        background: rgba(26, 86, 50, 0.06);
+        padding-left: 16px;
+    }
+    .sibling-current {
+        background: rgba(40, 167, 69, 0.08);
+        border-left: 3px solid var(--primary-light);
+        box-shadow: 0 0 12px rgba(40, 167, 69, 0.12);
+    }
+    [data-bs-theme="dark"] .sibling-current {
+        background: rgba(40, 167, 69, 0.1);
+        box-shadow: 0 0 16px rgba(40, 167, 69, 0.15);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="hero-section py-4">
     <div class="container">
@@ -22,36 +45,48 @@
     {% if allocations %}
     {% set latest = allocations[0] %}
     <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Net Allocation (Latest)</div>
-                    <div class="stat-value">{{ latest.net_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-green"><i class="bi bi-wallet2"></i></span>
+                        <div class="stat-label">Net Allocation (Latest)</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.net_allocation|naira }}</div>
                     <small class="text-muted">{{ MONTH_NAMES[latest.month] }} {{ latest.year }}</small>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.1s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Statutory</div>
-                    <div class="stat-value">{{ latest.statutory_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-blue"><i class="bi bi-cash-coin"></i></span>
+                        <div class="stat-label">Statutory</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.statutory_allocation|naira }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.2s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">VAT</div>
-                    <div class="stat-value">{{ latest.vat_allocation|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-gold"><i class="bi bi-receipt"></i></span>
+                        <div class="stat-label">VAT</div>
+                    </div>
+                    <div class="stat-value counter-animate">{{ latest.vat_allocation|naira }}</div>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-lg-3">
+        <div class="col-6 col-lg-3 reveal" style="transition-delay: 0.3s;">
             <div class="card stat-card h-100">
                 <div class="card-body">
-                    <div class="stat-label">Deductions</div>
-                    <div class="stat-value text-danger">{{ latest.deductions|naira }}</div>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <span class="stat-icon stat-icon-red"><i class="bi bi-dash-circle"></i></span>
+                        <div class="stat-label">Deductions</div>
+                    </div>
+                    <div class="stat-value text-danger counter-animate">{{ latest.deductions|naira }}</div>
                 </div>
             </div>
         </div>
@@ -62,7 +97,7 @@
         <div class="col-lg-8">
             <!-- Chart -->
             {% if chart_labels %}
-            <div class="card stat-card mb-4">
+            <div class="card stat-card mb-4 reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-graph-up"></i> Allocation Trend</h5>
                     <div class="chart-container">
@@ -73,7 +108,7 @@
             {% endif %}
 
             <!-- Allocation Table -->
-            <div class="card stat-card">
+            <div class="card stat-card reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-table"></i> Monthly Allocations</h5>
                     <div class="table-responsive">
@@ -111,7 +146,7 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <div class="card stat-card mb-4">
+            <div class="card stat-card mb-4 reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-info-circle"></i> LGA Info</h5>
                     <ul class="list-unstyled mb-0">
@@ -125,13 +160,13 @@
                 </div>
             </div>
 
-            <div class="card stat-card">
+            <div class="card stat-card reveal">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3"><i class="bi bi-geo"></i> Other LGAs in {{ state.name }}</h5>
-                    <div style="max-height: 300px; overflow-y: auto;">
+                    <div class="sibling-list" style="max-height: 300px; overflow-y: auto;">
                         {% for sibling in state.lgas|sort(attribute='name') %}
                         <a href="{{ url_for('lga_detail', state_name=state.name, lga_name=sibling.name) }}"
-                           class="d-block small text-decoration-none py-1 {% if sibling.id == lga.id %}fw-bold text-success{% endif %}">
+                           class="d-block small text-decoration-none py-1 {% if sibling.id == lga.id %}fw-bold text-success sibling-current{% endif %}">
                             {% if sibling.id == lga.id %}<i class="bi bi-arrow-right-short"></i>{% endif %}
                             {{ sibling.name }}
                         </a>
@@ -147,7 +182,12 @@
 {% block extra_js %}
 {% if chart_labels %}
 <script>
-    new Chart(document.getElementById('lgaChart'), {
+    const lgaCtx = document.getElementById('lgaChart').getContext('2d');
+    const gradFill = lgaCtx.createLinearGradient(0, 0, 0, 350);
+    gradFill.addColorStop(0, 'rgba(26, 86, 50, 0.25)');
+    gradFill.addColorStop(1, 'rgba(26, 86, 50, 0.02)');
+
+    new Chart(lgaCtx, {
         type: 'line',
         data: {
             labels: {{ chart_labels|tojson }},
@@ -155,29 +195,47 @@
                 label: 'Net Allocation',
                 data: {{ chart_net|tojson }},
                 borderColor: '#1a5632',
-                backgroundColor: 'rgba(26, 86, 50, 0.1)',
+                backgroundColor: gradFill,
                 fill: true,
-                tension: 0.3,
+                tension: 0.4,
                 pointBackgroundColor: '#1a5632',
-                pointRadius: 6,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
                 pointHoverRadius: 8,
+                borderWidth: 3,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeOutQuart' },
             plugins: {
                 tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleFont: { family: 'Inter', weight: '600' },
+                    bodyFont: { family: 'Inter' },
+                    padding: 12,
+                    cornerRadius: 10,
                     callbacks: {
                         label: ctx => '₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
                     }
+                },
+                legend: {
+                    labels: { font: { family: 'Inter', weight: '500' }, usePointStyle: true, pointStyle: 'circle' }
                 }
             },
             scales: {
                 y: {
+                    grid: { color: 'rgba(0,0,0,0.04)' },
                     ticks: {
+                        font: { family: 'Inter', size: 11 },
                         callback: v => '₦' + (v / 1e6).toFixed(0) + 'M'
                     }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Inter', size: 11 } }
                 }
             }
         }
