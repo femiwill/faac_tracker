@@ -324,6 +324,10 @@ def api_lgas(state_id):
 
 with app.app_context():
     db.create_all()
+    # Auto-seed if database is empty (needed for Railway's ephemeral filesystem)
+    if State.query.count() == 0:
+        from seed_data import seed
+        seed()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -532,13 +532,14 @@ def distribute_lga_allocations(state_name, lga_names, state_alloc, month, year):
 # MAIN SEEDING LOGIC
 # ---------------------------------------------------------------------------
 
-def seed():
+def seed(fresh=False):
     random.seed(42)  # Reproducible data
 
-    print("Dropping all tables...")
-    db.drop_all()
-    print("Creating all tables...")
-    db.create_all()
+    if fresh:
+        print("Dropping all tables...")
+        db.drop_all()
+        print("Creating all tables...")
+        db.create_all()
 
     # ------------------------------------------------------------------
     # Step 1: Create States
@@ -671,4 +672,4 @@ def seed():
 
 if __name__ == "__main__":
     with app.app_context():
-        seed()
+        seed(fresh=True)
