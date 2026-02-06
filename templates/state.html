@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}{{ state.name }}{% endblock %}
+
+{% block content %}
+<section class="hero-section py-4">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item active text-white">{{ state.name }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div>
+                <h1 class="mb-1">{{ state.name }} State</h1>
+                <span class="badge bg-light text-dark me-2">{{ state.code }}</span>
+                <span class="badge bg-light text-dark">{{ state.geo_zone }}</span>
+                <span class="badge bg-light text-dark">{{ state.lgas|length }} LGAs</span>
+            </div>
+            <a href="{{ url_for('compare') }}?states={{ state.name }}" class="btn btn-outline-light btn-sm mt-2 mt-md-0">
+                <i class="bi bi-bar-chart-line"></i> Compare with others
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="container py-4">
+    <!-- Summary Cards -->
+    {% if allocations %}
+    {% set latest = allocations[0] %}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Net Allocation (Latest)</div>
+                    <div class="stat-value">{{ latest.net_allocation|naira }}</div>
+                    <small class="text-muted">{{ MONTH_NAMES[latest.month] }} {{ latest.year }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Statutory Allocation</div>
+                    <div class="stat-value">{{ latest.statutory_allocation|naira }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">VAT Allocation</div>
+                    <div class="stat-value">{{ latest.vat_allocation|naira }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Deductions</div>
+                    <div class="stat-value text-danger">{{ latest.deductions|naira }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Charts -->
+        <div class="col-lg-8">
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> FAAC Allocation Trend</h5>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart"></i> Latest Allocation Breakdown</h5>
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="breakdownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- IGR Sidebar -->
+        <div class="col-lg-4">
+            {% if igr_data %}
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-cash-stack"></i> Internally Generated Revenue</h5>
+                    <table class="table table-sm table-alloc">
+                        <thead>
+                            <tr><th>Period</th><th class="text-end">Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for igr in igr_data %}
+                            <tr>
+                                <td>Q{{ igr.quarter }} {{ igr.year }}</td>
+                                <td class="text-end fw-semibold">{{ igr.amount|naira }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="table-success">
+                                <td class="fw-bold">Total</td>
+                                <td class="text-end fw-bold">
+                                    {{ igr_data|map(attribute='amount')|sum|naira }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-info-circle"></i> State Info</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>Code:</strong> {{ state.code }}</li>
+                        <li class="mb-2"><strong>Geo Zone:</strong> {{ state.geo_zone }}</li>
+                        <li><strong>No. of LGAs:</strong> {{ state.lgas|length }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allocation Table -->
+    <div class="card stat-card mt-4 mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
+                <h5 class="fw-bold mb-0"><i class="bi bi-table"></i> Monthly FAAC Allocations</h5>
+                <form method="get" class="d-flex gap-2 mt-2 mt-md-0">
+                    <select name="year" class="form-select form-select-sm" style="width: auto;">
+                        <option value="">All Years</option>
+                        {% for y in available_years %}
+                        <option value="{{ y }}" {% if filter_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="month" class="form-select form-select-sm" style="width: auto;">
+                        <option value="">All Months</option>
+                        {% for m, name in MONTH_NAMES.items() %}
+                        <option value="{{ m }}" {% if filter_month == m %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-success">Filter</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-alloc">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th class="text-end">Statutory</th>
+                            <th class="text-end">VAT</th>
+                            <th class="text-end">Gross</th>
+                            <th class="text-end">Deductions</th>
+                            <th class="text-end">Net</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in allocations %}
+                        <tr>
+                            <td class="fw-semibold">{{ MONTH_NAMES[a.month] }} {{ a.year }}</td>
+                            <td class="text-end">{{ a.statutory_allocation|naira }}</td>
+                            <td class="text-end">{{ a.vat_allocation|naira }}</td>
+                            <td class="text-end">{{ a.total_gross|naira }}</td>
+                            <td class="text-end text-danger">{{ a.deductions|naira }}</td>
+                            <td class="text-end fw-bold">{{ a.net_allocation|naira }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- LGA Allocations -->
+    {% if lga_allocations %}
+    <div class="card stat-card mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-geo"></i> LGA Allocations
+                <small class="text-muted fw-normal">({{ MONTH_NAMES[latest_lga.month] }} {{ latest_lga.year }})</small>
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-alloc">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">#</th>
+                            <th>LGA</th>
+                            <th class="text-end">Net Allocation</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for la in lga_allocations %}
+                        <tr>
+                            <td class="ps-3">{{ loop.index }}</td>
+                            <td class="fw-semibold">
+                                <a href="{{ url_for('lga_detail', state_name=state.name, lga_name=la.lga.name) }}" class="text-decoration-none">
+                                    {{ la.lga.name }}
+                                </a>
+                            </td>
+                            <td class="text-end">{{ la.net_allocation|naira }}</td>
+                            <td>
+                                <a href="{{ url_for('lga_detail', state_name=state.name, lga_name=la.lga.name) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chartLabels = {{ chart_labels|tojson }};
+    const chartStatutory = {{ chart_statutory|tojson }};
+    const chartVat = {{ chart_vat|tojson }};
+    const chartNet = {{ chart_net|tojson }};
+
+    // Trend Chart
+    new Chart(document.getElementById('trendChart'), {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: 'Statutory',
+                    data: chartStatutory,
+                    backgroundColor: 'rgba(26, 86, 50, 0.8)',
+                    borderRadius: 4,
+                },
+                {
+                    label: 'VAT',
+                    data: chartVat,
+                    backgroundColor: 'rgba(240, 192, 64, 0.8)',
+                    borderRadius: 4,
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: v => '₦' + (v / 1e9).toFixed(0) + 'B'
+                    }
+                }
+            }
+        }
+    });
+
+    // Breakdown Donut
+    {% if allocations %}
+    new Chart(document.getElementById('breakdownChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Statutory Allocation', 'VAT Allocation', 'Deductions'],
+            datasets: [{
+                data: [
+                    {{ allocations[0].statutory_allocation }},
+                    {{ allocations[0].vat_allocation }},
+                    {{ allocations[0].deductions }}
+                ],
+                backgroundColor: ['#1a5632', '#f0c040', '#dc3545'],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.label + ': ₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

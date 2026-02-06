@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ lga.name }} - {{ state.name }}{% endblock %}
+
+{% block content %}
+<section class="hero-section py-4">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('state_detail', name=state.name) }}" class="text-white-50">{{ state.name }}</a></li>
+                <li class="breadcrumb-item active text-white">{{ lga.name }}</li>
+            </ol>
+        </nav>
+        <h1 class="mb-1">{{ lga.name }} LGA</h1>
+        <span class="badge bg-light text-dark">{{ state.name }} State</span>
+        <span class="badge bg-light text-dark">{{ state.geo_zone }}</span>
+    </div>
+</section>
+
+<div class="container py-4">
+    <!-- Summary Cards -->
+    {% if allocations %}
+    {% set latest = allocations[0] %}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Net Allocation (Latest)</div>
+                    <div class="stat-value">{{ latest.net_allocation|naira }}</div>
+                    <small class="text-muted">{{ MONTH_NAMES[latest.month] }} {{ latest.year }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Statutory</div>
+                    <div class="stat-value">{{ latest.statutory_allocation|naira }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">VAT</div>
+                    <div class="stat-value">{{ latest.vat_allocation|naira }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <div class="stat-label">Deductions</div>
+                    <div class="stat-value text-danger">{{ latest.deductions|naira }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Chart -->
+            {% if chart_labels %}
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-graph-up"></i> Allocation Trend</h5>
+                    <div class="chart-container">
+                        <canvas id="lgaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Allocation Table -->
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-table"></i> Monthly Allocations</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-alloc">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th class="text-end">Statutory</th>
+                                    <th class="text-end">VAT</th>
+                                    <th class="text-end">Gross</th>
+                                    <th class="text-end">Deductions</th>
+                                    <th class="text-end">Net</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in allocations %}
+                                <tr>
+                                    <td class="fw-semibold">{{ MONTH_NAMES[a.month] }} {{ a.year }}</td>
+                                    <td class="text-end">{{ a.statutory_allocation|naira }}</td>
+                                    <td class="text-end">{{ a.vat_allocation|naira }}</td>
+                                    <td class="text-end">{{ a.total_gross|naira }}</td>
+                                    <td class="text-end text-danger">{{ a.deductions|naira }}</td>
+                                    <td class="text-end fw-bold">{{ a.net_allocation|naira }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if not allocations %}
+                    <p class="text-muted text-center py-3">No allocation data available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-info-circle"></i> LGA Info</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><strong>LGA:</strong> {{ lga.name }}</li>
+                        <li class="mb-2">
+                            <strong>State:</strong>
+                            <a href="{{ url_for('state_detail', name=state.name) }}">{{ state.name }}</a>
+                        </li>
+                        <li><strong>Geo Zone:</strong> {{ state.geo_zone }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-geo"></i> Other LGAs in {{ state.name }}</h5>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        {% for sibling in state.lgas|sort(attribute='name') %}
+                        <a href="{{ url_for('lga_detail', state_name=state.name, lga_name=sibling.name) }}"
+                           class="d-block small text-decoration-none py-1 {% if sibling.id == lga.id %}fw-bold text-success{% endif %}">
+                            {% if sibling.id == lga.id %}<i class="bi bi-arrow-right-short"></i>{% endif %}
+                            {{ sibling.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_labels %}
+<script>
+    new Chart(document.getElementById('lgaChart'), {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: 'Net Allocation',
+                data: {{ chart_net|tojson }},
+                borderColor: '#1a5632',
+                backgroundColor: 'rgba(26, 86, 50, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#1a5632',
+                pointRadius: 6,
+                pointHoverRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: ctx => '₦' + (ctx.raw / 1e9).toFixed(2) + 'B'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: v => '₦' + (v / 1e6).toFixed(0) + 'M'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

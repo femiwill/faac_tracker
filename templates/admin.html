@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="fw-bold mb-0"><i class="bi bi-gear"></i> Admin Dashboard</h3>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add State-Level Allocation -->
+        <div class="col-lg-6">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle"></i> Add State-Level FAAC Allocation</h5>
+                    <form method="post" action="{{ url_for('admin_add_allocation') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">State</label>
+                            <select name="state_id" class="form-select" required>
+                                <option value="">Select state</option>
+                                {% for s in states %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Month</label>
+                                <select name="month" class="form-select" required>
+                                    {% for m, name in MONTH_NAMES.items() %}
+                                    <option value="{{ m }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Year</label>
+                                <input type="number" name="year" class="form-control" value="2024" min="2000" max="2030" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Statutory Allocation (₦)</label>
+                            <input type="number" name="statutory_allocation" class="form-control" step="0.01" placeholder="e.g. 20000000000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">VAT Allocation (₦)</label>
+                            <input type="number" name="vat_allocation" class="form-control" step="0.01" placeholder="e.g. 15000000000" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Deductions (₦)</label>
+                            <input type="number" name="deductions" class="form-control" step="0.01" placeholder="e.g. 3000000000" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> Save Allocation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-lg-6">
+            <div class="card stat-card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-database"></i> Database Summary</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>States</span>
+                            <span class="badge bg-success">{{ states|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Total LGAs</span>
+                            <span class="badge bg-success">
+                                {% set total_lgas = [] %}
+                                {% for s in states %}{% if total_lgas.append(s.lgas|length) %}{% endif %}{% endfor %}
+                                {{ total_lgas|sum }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-lightbulb"></i> Tips</h5>
+                    <ul class="mb-0 small text-muted">
+                        <li class="mb-2">Enter amounts in full Naira (e.g. 20000000000 for ₦20 billion)</li>
+                        <li class="mb-2">If a record already exists for that state/month/year, it will be updated</li>
+                        <li class="mb-2">Gross total and net allocation are calculated automatically</li>
+                        <li>Set the <code>ADMIN_PASSWORD</code> environment variable for production security</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
