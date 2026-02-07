@@ -105,7 +105,11 @@
                         <h5 class="fw-bold mb-0"><i class="bi bi-cloud-download"></i> FAAC Data Scraper</h5>
                         {% if next_run_time %}
                         <span class="badge bg-info">
-                            <i class="bi bi-clock"></i> Next run: {{ next_run_time.strftime('%d %b %Y, %H:%M UTC') }}
+                            <i class="bi bi-clock"></i> Next run: {{ next_run_time }}
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-clock"></i> Scheduled: 15th of each month, 9 AM UTC
                         </span>
                         {% endif %}
                     </div>

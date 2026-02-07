@@ -519,8 +519,11 @@ def admin_logout():
 def admin_dashboard():
     states = State.query.order_by(State.name).all()
     scrape_logs = ScrapeLog.query.order_by(ScrapeLog.run_date.desc()).limit(20).all()
-    next_run = scheduler.get_job('faac_monthly_scrape')
-    next_run_time = next_run.next_run_time if next_run else None
+    try:
+        next_run = scheduler.get_job('faac_monthly_scrape')
+        next_run_time = next_run.next_run_time.strftime('%d %b %Y, %H:%M UTC') if next_run and next_run.next_run_time else None
+    except Exception:
+        next_run_time = None
     return render_template('admin.html', states=states, scrape_logs=scrape_logs,
                            next_run_time=next_run_time)
 
